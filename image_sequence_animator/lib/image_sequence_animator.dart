@@ -141,7 +141,7 @@ class ImageSequenceAnimatorState extends State<ImageSequenceAnimator> with Singl
   String _folderName;
   String _fileName;
   String _fileFormat;
-  double get _frameCount => _useFullPaths ? widget.fullPaths!.length * 1.0 : widget.frameCount;
+  double _frameCount = 0;
   bool get _useFullPaths => widget.fullPaths != null && widget.fullPaths!.isNotEmpty;
 
   ///Use this value to check if this [ImageSequenceAnimator] is currently looping.
@@ -225,6 +225,7 @@ class ImageSequenceAnimatorState extends State<ImageSequenceAnimator> with Singl
   @override
   void initState() {
     super.initState();
+    _frameCount = (widget.fullPaths != null && widget.fullPaths!.isNotEmpty) ? widget.fullPaths!.length * 1.0 : widget.frameCount.toDouble();
 
     _animationController = AnimationController(
       vsync: this,
@@ -328,6 +329,22 @@ class ImageSequenceAnimatorState extends State<ImageSequenceAnimator> with Singl
       _animationController!.value = totalTime * percentage;
     else
       _animationController!.value = value;
+  }
+
+  void animateToEndFast() {
+    if(!_isReadyToPlay) return;
+
+    int duration = ((_animationController!.upperBound - _animationController!.value) * _fpsInMilliseconds / 3).ceil();
+
+    _animationController!.animateTo(_animationController!.upperBound, duration: Duration(milliseconds: duration));
+  }
+
+  void updateImageSequence(String folderName, String fileName, double frameCount) {
+    setState(() {
+      _folderName = folderName;
+      _fileName = fileName;
+      _frameCount = frameCount;
+    });
   }
 
   ///Use this function to restart this [ImageSequenceAnimator].
